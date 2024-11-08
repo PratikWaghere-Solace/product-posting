@@ -190,83 +190,79 @@ if ($selectedFrameCode || $selectedProductType) {
       }
     ?>
 
-<?php if (isset($_GET['success']) && $_GET['success'] == '2'){
+<?php
+if (isset($_GET['success']) && $_GET['success'] == '2') {
     
+    // Write the data to data.json
     $file = fopen("data.json", "w");
     fwrite($file, $json);
     fclose($file);
+
     $output = null;
     $retval = null;
-    
-    // $file = fopen("data.json", "w");
-    // fwrite($file, $json);
-    // fclose($file);
-    // $output = null;
-    // $retval = null;
 
+    // Check if it is a Git repository
     $command = 'git status 2>&1';
     exec($command, $output, $retval);
-    if (strpos(implode("\n", $output), 'Not a git repository') !== false) {
-        $command = 'git init';
-        exec($command, $output, $retval);
-        if ($retval == 0) {
-            $command = 'git add data.json';
-            exec($command, $output, $retval);
-            if ($retval == 0) {
-                $command = 'git commit -m "Automated commit of data.json"';
-                exec($command, $output, $retval);
-                if ($retval == 0) {
-                    $command = 'git remote add origin https://github.com/your-username/your-repo-name.git';
-                    exec($command, $output, $retval);
-                    if ($retval == 0) {
-                        $command = 'git push -u origin master';
-                        exec($command, $output, $retval);
-                        if ($retval == 0) {
-                            echo "Data.json successfully added to git repo and pushed to origin master";
-                        } else {
-                            echo "Error pushing to origin master";
-                            echo '<br>';
-                            echo $output;
-                        }
-                    } else {
-                        echo "Error adding remote origin";
-                    }
-                } else {
-                    echo "Error committing data.json";
-                }
-            } else {
-                echo "Error adding data.json to git repo";
-            }
-        } else {
-            echo "Error initializing git repository";
-        }
-    } else {
-        $command = 'git add data.json';
-        exec($command, $output, $retval);
-        if ($retval == 0) {
-            $command = 'git commit -m "Automated commit of data.json"';
-            exec($command, $output, $retval);
-            if ($retval == 0) {
-                $command = 'git push origin main';
-                exec($command, $output, $retval);
-                if ($retval == 0) {
-                    echo "Data.json successfully added to git repo and pushed to origin main";
-                } else {
-                    echo "Error pushing to origin master";
-                    echo '<br>';
-                    echo '<pre>';
-                    print_r($output);
-                    echo '</pre>';
 
-                }
-            } else {
-                echo "Error committing data.json";
-            }
-        } else {
-            echo "Error adding data.json to git repo";
+    if (strpos(implode("\n", $output), 'Not a git repository') !== false) {
+        // Initialize Git if not already a repository
+        exec('git init', $output, $retval);
+        if ($retval !== 0) {
+            echo "Error initializing git repository";
+            exit;
         }
     }
+
+    // Check if remote origin is set
+    exec('git remote -v', $output, $retval);
+    if (strpos(implode("\n", $output), 'origin') === false) {
+        // Add remote origin if not already added
+        exec('git remote add origin https://github.com/PratikWaghere-Solace/product-posting.git', $output, $retval);
+        if ($retval !== 0) {
+            echo "Error adding remote origin";
+            exit;
+        }
+    }
+
+    // Add all changes to the staging area
+    exec('git add .', $output, $retval);
+    if ($retval !== 0) {
+        echo "Error adding files to git repo";
+        exit;
+    }
+
+    // Commit the changes
+    exec('git commit -m "Automated commit of all changes"', $output, $retval);
+    if ($retval !== 0) {
+        echo "Error committing changes";
+        exit;
+    }
+
+    // Check if the main branch exists, and push to it
+    exec('git rev-parse --abbrev-ref HEAD', $branchOutput, $retval);
+    $currentBranch = trim(implode("\n", $branchOutput));
+
+    // If the branch is 'main' or if the main branch exists, use 'main'
+    if ($currentBranch === 'main' || exec('git show-ref --verify --quiet refs/heads/main') === 0) {
+        exec('git push -u origin main', $output, $retval);
+    } else {
+        // Otherwise, fallback to master
+        exec('git push -u origin master', $output, $retval);
+    }
+
+    if ($retval === 0) {
+        echo "All changes successfully pushed to the remote repository.";
+    } else {
+        echo "Error pushing to the remote repository.";
+        echo '<br>';
+        echo '<pre>';
+        print_r($output);
+        echo '</pre>';
+    }
 }
+
+
 //     $command = 'git add data.json';
 //     exec($command, $output, $retval);
 //     if ($retval == 0) {
