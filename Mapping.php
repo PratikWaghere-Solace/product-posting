@@ -192,7 +192,7 @@ if ($selectedFrameCode || $selectedProductType) {
 
 <?php
 if (isset($_GET['success']) && $_GET['success'] == '2') {
-    
+
     // Write the data to data.json
     $file = fopen("data.json", "w");
     fwrite($file, $json);
@@ -202,8 +202,7 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
     $retval = null;
 
     // Check if it is a Git repository
-    $command = 'git status 2>&1';
-    exec($command, $output, $retval);
+    exec('git status 2>&1', $output, $retval);
 
     if (strpos(implode("\n", $output), 'Not a git repository') !== false) {
         // Initialize Git if not already a repository
@@ -213,6 +212,9 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
             exit;
         }
     }
+
+    // Ensure that any pre-existing changes are unstaged to avoid conflicts
+    exec('git reset', $output, $retval);
 
     // Check if remote origin is set
     exec('git remote -v', $output, $retval);
@@ -225,7 +227,7 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
         }
     }
 
-    // Ensure all modified files are staged
+    // Stage all changes, including new, modified, and deleted files
     exec('git add -A', $output, $retval);
     if ($retval !== 0) {
         echo "Error adding files to git repo";
@@ -239,28 +241,28 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
         exit;
     }
 
-    // Check if the main branch exists, and push to it
+    // Determine current branch
     exec('git rev-parse --abbrev-ref HEAD', $branchOutput, $retval);
     $currentBranch = trim(implode("\n", $branchOutput));
 
-    // If the branch is 'main' or if the main branch exists, use 'main'
+    // If main exists, push to main; otherwise, fallback to master
     if ($currentBranch === 'main' || exec('git show-ref --verify --quiet refs/heads/main') === 0) {
-        exec('git push -u origin main', $output, $retval);
+        exec('git push -u origin main 2>&1', $pushOutput, $pushRetval);
     } else {
-        // Otherwise, fallback to master
-        exec('git push -u origin master', $output, $retval);
+        exec('git push -u origin master 2>&1', $pushOutput, $pushRetval);
     }
 
-    if ($retval === 0) {
+    // Output result of the push
+    if ($pushRetval === 0) {
         echo "All changes successfully pushed to the remote repository.";
     } else {
         echo "Error pushing to the remote repository.";
-        echo '<br>';
-        echo '<pre>';
-        print_r($output);
+        echo '<br><pre>';
+        print_r($pushOutput);
         echo '</pre>';
     }
 }
+
 
 
 
