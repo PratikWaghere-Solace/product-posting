@@ -117,7 +117,7 @@ if ($selectedFrameCode || $selectedProductType) {
                     <tr>
                         <td class="field">SKU</td>
                         <td>
-                            <input type="text" name="data[<?php echo $index; ?>][sku]" value="<?php echo htmlspecialchars($row['']); ?>" readonly>
+                            <input type="text" name="data[<?php echo $index; ?>][sku]" value="<?php echo htmlspecialchars($row['sku']); ?>" readonly>
                         </td>
                     </tr>
                     <tr>
@@ -135,11 +135,11 @@ if ($selectedFrameCode || $selectedProductType) {
                     <tr>
                         <td class="field">Image</td>
                         <td>
-                            <input type="text" name="data[<?php echo $index; ?>][image]" value="<?php echo htmlspecialchars($row['image']); ?>">
+                            <input type="text" name="data[<?php echo $index; ?>][frame_file_name]" value="<?php echo htmlspecialchars($row['frame_file_name']); ?>">
                         </td>
                     </tr>
                     <?php foreach ($row as $key => $value): ?>
-                        <?php if (!in_array($key, ['id', 'frame_code', 'product_type', 'image'])): ?>
+                        <?php if (!in_array($key, ['id', 'frame_code', 'product_type', 'frame_file_name'])): ?>
                             <tr>
                                 <td class="field"><?php echo htmlspecialchars($key); ?></td>
                                 <td>
@@ -172,8 +172,6 @@ if ($selectedFrameCode || $selectedProductType) {
     //    print_r($receivedArray); // Output the array
     
     ?>
-
-    
     <div style="display:flex;">
         <form action="Mapping.php" method="get" style="margin-right:20px;">
             <input type="hidden" name="success" value="1">
@@ -234,16 +232,16 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
     }
 
     // Pull the latest changes from the remote repository
-    exec('git pull --rebase origin main 2>&1', $output, $retval);
-    if ($retval !== 0) {
-        echo "Error pulling latest changes from remote repository.";
-        echo '<br><pre>';
-        print_r($output);
-        echo '</pre>';
-        // Apply stashed changes back in case of error
-        exec('git stash pop', $output);
-        exit;
-    }
+    // exec('git pull --rebase origin main 2>&1', $output, $retval);
+    // if ($retval !== 0) {
+    //     echo "Error pulling latest changes from remote repository.";
+    //     echo '<br><pre>';
+    //     print_r($output);
+    //     echo '</pre>';
+    //     // Apply stashed changes back in case of error
+    //     exec('git stash pop', $output);
+    //     exit;
+    // }
 
     // Apply stashed changes after a successful pull
     exec('git stash pop', $output, $retval);
@@ -279,6 +277,7 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
         echo '</pre>';
     }
 }
+
 
 
 
