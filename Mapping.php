@@ -213,9 +213,6 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
         }
     }
 
-    // Ensure that any pre-existing changes are unstaged to avoid conflicts
-    exec('git reset', $output, $retval);
-
     // Check if remote origin is set
     exec('git remote -v', $output, $retval);
     if (strpos(implode("\n", $output), 'origin') === false) {
@@ -227,6 +224,32 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
         }
     }
 
+    // Stash any local uncommitted changes to ensure a clean pull
+    exec('git stash', $output, $retval);
+    if ($retval !== 0) {
+        echo "Error stashing changes";
+        exit;
+    }
+
+    // Pull the latest changes from the remote repository
+    exec('git pull --rebase origin main 2>&1', $output, $retval);
+    if ($retval !== 0) {
+        echo "Error pulling latest changes from remote repository.";
+        echo '<br><pre>';
+        print_r($output);
+        echo '</pre>';
+        // Apply stashed changes back in case of error
+        exec('git stash pop', $output);
+        exit;
+    }
+
+    // Apply stashed changes after a successful pull
+    exec('git stash pop', $output, $retval);
+    if ($retval !== 0 && strpos(implode("\n", $output), 'No stash entries found') === false) {
+        echo "Error applying stashed changes";
+        exit;
+    }
+
     // Stage all changes, including new, modified, and deleted files
     exec('git add -A', $output, $retval);
     if ($retval !== 0) {
@@ -236,21 +259,13 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
 
     // Commit the changes
     exec('git commit -m "Automated commit of all changes"', $output, $retval);
-    if ($retval !== 0) {
+    if ($retval !== 0 && strpos(implode("\n", $output), 'nothing to commit') === false) {
         echo "Error committing changes";
         exit;
     }
 
-    // Determine current branch
-    exec('git rev-parse --abbrev-ref HEAD', $branchOutput, $retval);
-    $currentBranch = trim(implode("\n", $branchOutput));
-
-    // If main exists, push to main; otherwise, fallback to master
-    if ($currentBranch === 'main' || exec('git show-ref --verify --quiet refs/heads/main') === 0) {
-        exec('git push -u origin main 2>&1', $pushOutput, $pushRetval);
-    } else {
-        exec('git push -u origin master 2>&1', $pushOutput, $pushRetval);
-    }
+    // Push changes to the remote repository
+    exec('git push -u origin main 2>&1', $pushOutput, $pushRetval);
 
     // Output result of the push
     if ($pushRetval === 0) {
