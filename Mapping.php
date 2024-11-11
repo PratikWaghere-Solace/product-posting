@@ -71,6 +71,16 @@ if ($selectedFrameCode || $selectedProductType) {
 
 <!-- Filter Form -->
 <form action="" method="post">
+<label for="product_type">Product Type:</label>
+    <select name="product_type" id="product_type">
+        <option value="">Select Product Type</option>
+        <?php foreach ($productTypes as $productType): ?>
+            <option value="<?php echo htmlspecialchars($productType); ?>" <?php if ($productType === $selectedProductType) echo 'selected'; ?>>
+                <?php echo htmlspecialchars($productType); ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+    <br><br>
     <label for="frame_code">Frame Code:</label>
     <select name="frame_code" id="frame_code">
         <option value="">Select Frame Code</option>
@@ -81,17 +91,9 @@ if ($selectedFrameCode || $selectedProductType) {
         <?php endforeach; ?>
     </select>
 
-    <label for="product_type">Product Type:</label>
-    <select name="product_type" id="product_type">
-        <option value="">Select Product Type</option>
-        <?php foreach ($productTypes as $productType): ?>
-            <option value="<?php echo htmlspecialchars($productType); ?>" <?php if ($productType === $selectedProductType) echo 'selected'; ?>>
-                <?php echo htmlspecialchars($productType); ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
+    <br><br>
 
-    <button type="submit">Filter</button>
+    <button type="submit">Submit</button>
 </form>
 
 <!-- Editable Table (Only shows when data is available) -->
@@ -172,8 +174,8 @@ if ($selectedFrameCode || $selectedProductType) {
     ?>
 
     
-    <div>
-        <form action="Mapping.php" method="get">
+    <div style="display:flex;">
+        <form action="Mapping.php" method="get" style="margin-right:20px;">
             <input type="hidden" name="success" value="1">
             <button type="submit" id="convert-to-json">JSON Data</button>
         </form>
