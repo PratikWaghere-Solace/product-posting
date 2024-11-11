@@ -225,8 +225,8 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
         }
     }
 
-    // Add all changes to the staging area
-    exec('git add data.json', $output, $retval);
+    // Ensure all modified files are staged
+    exec('git add -A', $output, $retval);
     if ($retval !== 0) {
         echo "Error adding files to git repo";
         exit;
@@ -261,6 +261,7 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
         echo '</pre>';
     }
 }
+
 
 
 //     $command = 'git add data.json';
