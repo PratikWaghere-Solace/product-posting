@@ -226,7 +226,7 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
     }
 
     // Add all changes to the staging area
-    exec('git add .', $output, $retval);
+    exec('git add data.json', $output, $retval);
     if ($retval !== 0) {
         echo "Error adding files to git repo";
         exit;
