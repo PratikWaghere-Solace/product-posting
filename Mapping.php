@@ -206,7 +206,7 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
 
     if (strpos(implode("\n", $output), 'Not a git repository') !== false) {
         // Initialize Git if not already a repository
-        exec('git init', $output, $retval);
+        exec('git init 2>&1', $output, $retval);
         if ($retval !== 0) {
             echo "Error initializing git repository";
             exit;
@@ -214,53 +214,68 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
     }
 
     // Check if remote origin is set
-    exec('git remote -v', $output, $retval);
+    exec('git remote -v 2>&1', $output, $retval);
     if (strpos(implode("\n", $output), 'origin') === false) {
-        // Add remote origin if not already added
-        exec('git remote add origin https://github.com/PratikWaghere-Solace/product-posting.git', $output, $retval);
+        // Add remote origin with the correct URL
+        exec('git remote add origin https://github.com/PratikWaghere-Solace/product-posting.git 2>&1', $output, $retval);
         if ($retval !== 0) {
-            echo "Error adding remote origin";
+            echo "Error adding remote origin.";
+            echo '<br><pre>';
+            print_r($output);
+            echo '</pre>';
             exit;
         }
     }
 
     // Stash any local uncommitted changes to ensure a clean pull
-    exec('git stash', $output, $retval);
-    if ($retval !== 0) {
-        echo "Error stashing changes";
+    exec('git stash 2>&1', $output, $retval);
+    if ($retval !== 0 && strpos(implode("\n", $output), 'No local changes to save') === false) {
+        echo "Error stashing changes.";
+        echo '<br><pre>';
+        print_r($output);
+        echo '</pre>';
         exit;
     }
 
     // Pull the latest changes from the remote repository
-    // exec('git pull --rebase origin main 2>&1', $output, $retval);
-    // if ($retval !== 0) {
-    //     echo "Error pulling latest changes from remote repository.";
-    //     echo '<br><pre>';
-    //     print_r($output);
-    //     echo '</pre>';
-    //     // Apply stashed changes back in case of error
-    //     exec('git stash pop', $output);
-    //     exit;
-    // }
+    exec('git pull --rebase origin main 2>&1', $output, $retval);
+    if ($retval !== 0) {
+        echo "Error pulling latest changes from remote repository.";
+        echo '<br><pre>';
+        print_r($output);
+        echo '</pre>';
+        // Apply stashed changes back in case of error
+        exec('git stash pop 2>&1', $output);
+        exit;
+    }
 
     // Apply stashed changes after a successful pull
-    exec('git stash pop', $output, $retval);
+    exec('git stash pop 2>&1', $output, $retval);
     if ($retval !== 0 && strpos(implode("\n", $output), 'No stash entries found') === false) {
-        echo "Error applying stashed changes";
+        echo "Error applying stashed changes.";
+        echo '<br><pre>';
+        print_r($output);
+        echo '</pre>';
         exit;
     }
 
     // Stage all changes, including new, modified, and deleted files
-    exec('git add -A', $output, $retval);
+    exec('git add -A 2>&1', $output, $retval);
     if ($retval !== 0) {
-        echo "Error adding files to git repo";
+        echo "Error adding files to git repo.";
+        echo '<br><pre>';
+        print_r($output);
+        echo '</pre>';
         exit;
     }
 
     // Commit the changes
-    exec('git commit -m "Automated commit of all changes"', $output, $retval);
+    exec('git commit -m "Automated commit of all changes" 2>&1', $output, $retval);
     if ($retval !== 0 && strpos(implode("\n", $output), 'nothing to commit') === false) {
-        echo "Error committing changes";
+        echo "Error committing changes.";
+        echo '<br><pre>';
+        print_r($output);
+        echo '</pre>';
         exit;
     }
 
@@ -278,34 +293,19 @@ if (isset($_GET['success']) && $_GET['success'] == '2') {
     }
 }
 
+ ?>
 
+ <?php
+ if (isset($_GET['success']) && $_GET['success'] == '3') {
+    $file = fopen("data.json", "w");
+    fwrite($file, $json);
+    fclose($file);
 
+    header('Location: product_type.php');
 
-
-//     $command = 'git add data.json';
-//     exec($command, $output, $retval);
-//     if ($retval == 0) {
-//         $command = 'git commit -m "Automated commit of data.json"';
-//         exec($command, $output, $retval);
-//         if ($retval == 0) {
-//             $command = 'git push origin master';
-//             exec($command, $output, $retval);
-//             if ($retval == 0) {
-//                 echo "Data.json successfully added to git repo and pushed to origin master";
-//             } else {
-//                 echo "Error pushing to origin master";
-//                 echo '<br>';
-//                 echo $output;
-//             }
-//         } else {
-//             echo "Error committing data.json";
-//         }
-//     } else {
-//         echo "Error adding data.json to git repo";
-//     }
-// }
-
-    ?>
+ }
+  
+ ?>
 
 <?php endif; ?>
 
