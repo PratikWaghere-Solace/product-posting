@@ -181,6 +181,11 @@ if ($selectedFrameCode || $selectedProductType) {
         <input type="hidden" name="success" value="2">
         <button type="submit" id="send-to-github">Post Data</button>
         </form>
+
+        <form action="Mapping.php" method="get">
+        <input type="hidden" name="success" value="3">
+        <button type="submit" id="send-to-github">Demo Action</button>
+        </form>
     </div>
     <?php if (isset($_GET['success']) && $_GET['success'] == '1'){
         $file = fopen("data.json", "w");
