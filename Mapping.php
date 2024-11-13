@@ -178,7 +178,7 @@ if ($selectedFrameCode || $selectedProductType) {
             <button type="submit" id="convert-to-json">JSON Data</button>
         </form>
         <form action="Mapping.php" method="get">
-        <input type="hidden" name="success" value="2">
+        <input type="hidden" name="success" value="2" style="margin-right:20px;">
         <button type="submit" id="send-to-github">Post Data</button>
         </form>
 

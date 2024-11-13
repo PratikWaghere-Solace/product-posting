@@ -28,11 +28,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
                 backing_name = :backing_name,
                 backing_in_stock = :backing_in_stock,
                 backing_image = :backing_image,
-                product_type = :product_type
+                product_type = :product_type,
+                website_id = :website_id,
+                website_name = :website_name,
+                website_logo = :website_logo
             WHERE id = :id";
 
     // Prepare the SQL statement once outside the loop for efficiency
     $stmt = $pdo1->prepare($sql);
+
+    // Flag to track execution success
+    $allUpdated = true;
 
     // Iterate through each row of submitted data
     foreach ($data as $row) {
@@ -59,27 +65,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data'])) {
         $stmt->bindValue(':backing_in_stock', $row['backing_in_stock'], PDO::PARAM_INT);
         $stmt->bindValue(':backing_image', $row['backing_image']);
         $stmt->bindValue(':product_type', $row['product_type']);
-        
-        //   Execute the update query for each row
-        $stmt->execute();
-    }
-                           
-    // Redirect back to  the editable table page or show a success message
-// Redirect back to the editable table page or show a success message
-        if ($stmt->execute()) {
+        $stmt->bindValue(':website_id', $row['website_id']);
+        $stmt->bindValue(':website_name', $row['website_name']);
+        $stmt->bindValue(':website_logo', $row['website_logo']);
 
-            session_start();
-            $dataArray = $data;
-            // print_r($dataArray);
-            $_SESSION['data'] = $dataArray;
-            
-            header('Location: Mapping.php?success');
-            exit;
-        } else {
-            echo "Error updating data.";
+        // Execute the update query for each row
+        if (!$stmt->execute()) {
+            $allUpdated = false;
+            break; // Stop if any update fails
         }
+    }
+
+    // Redirect based on whether all updates were successful
+    if ($allUpdated) {
+        session_start();
+        $_SESSION['data'] = $data;
+        header('Location: postOngit.php?success');
+        exit;
+    } else {
+        echo "Error updating data.";
+    }
 }
-
-// 
-
 ?>

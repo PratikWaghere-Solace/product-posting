@@ -152,10 +152,33 @@ require "./db.php";
 
             return $hardware_data;
         }
-                                                     
+
+        function getStdSize($pdo){
+         $stmt = $pdo->prepare("SELECT * FROM `pre_made_size_all` WHERE standard_sizes = 1 AND populer = 1 LIMIT 3");
+         $stmt->execute();
+         $stmt->setFetchMode(PDO::FETCH_ASSOC);
+         $result = $stmt->fetchAll();
+         return $result;
+        }
+        function getSuze($pdo){
+            $stmt = $pdo->prepare("SELECT * FROM `pre_made_size_all` WHERE wom2_price > 20 ORDER BY id desc LIMIT 3");
+            $stmt->execute();
+            $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+            return $result;
+        }
+
+        function getWebsite($pdo){
+            $stmt = $pdo->prepare("SELECT * from `website` where in_use = 1");
+            $stmt->execute();
+            $stmt->setFetchMode(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll();
+            return $result;
+        }     
 
 
 
+ 
 // However, the error you're experiencing is likely due to the fact that you're not closing your database connections or freeing up resources after use. This can cause your script to timeout.
 
 // To fix this, you should close your database connections and free up resources after use. Here's an example of how you can do this:
@@ -184,5 +207,7 @@ set_time_limit(60); // Increase the maximum execution time to 60 seconds
 // ```
 
 // However, this is not recommended as it can cause your script to run indefinitely if there's an issue. It's better to optimize your code to run within the default time limit.
+
+
 
 ?>
